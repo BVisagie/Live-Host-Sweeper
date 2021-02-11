@@ -10,6 +10,8 @@ namespace LiveHostSweeper
         /// </summary>
         public static MainMenuOptions PresentAndHandleMainMenuOptions()
         {
+            Utilities.PrintToScreen(ConsoleColor.DarkYellow, "Live Host Sweeper", PaddingTypes.Top);
+
             Utilities.PrintToScreen(ConsoleColor.White, "Press [1] to perform a ping sweep of a given IPv4 or IPv6 address.", PaddingTypes.Top);
             Utilities.PrintToScreen(ConsoleColor.White, "Press [2] to exit.", PaddingTypes.Bottom);
 

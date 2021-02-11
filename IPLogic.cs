@@ -1,6 +1,8 @@
-﻿using LiveHostSweeper.Enums;
+﻿using ConsoleTables;
+using LiveHostSweeper.Enums;
 using Serilog;
 using System;
+using System.IO;
 using System.Net;
 using System.Net.NetworkInformation;
 
@@ -37,10 +39,11 @@ namespace LiveHostSweeper
             {
                 case 1:
 
-                    Utilities.PrintToScreen(ConsoleColor.Green, "Press [1] to log the entire ping sweep to the log file?", PaddingTypes.Top);
-                    Utilities.PrintToScreen(ConsoleColor.DarkGreen, "Press [2] to log only succesfull pings to the log file?", PaddingTypes.None);
+                    Utilities.PrintToScreen(ConsoleColor.Green, "Press [1] to log the entire ping sweep to console and file.", PaddingTypes.Top);
+                    Utilities.PrintToScreen(ConsoleColor.Blue, "Press [2] to log only succesfull pings to console and file.", PaddingTypes.None);
                     Utilities.PrintToScreen(ConsoleColor.Yellow, "Press [3] to restart the application.", PaddingTypes.None);
-                    Utilities.PrintToScreen(ConsoleColor.Red, "Press [4] to exit.", PaddingTypes.Bottom);
+                    Utilities.PrintToScreen(ConsoleColor.Red, "Press [4] to exit.", PaddingTypes.None);
+                    Utilities.PrintToScreen(ConsoleColor.DarkMagenta, $"Your log file should be located here: {new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName}", PaddingTypes.Full);
 
                     userSelection = Utilities.ValidateUserInputToInt();
 
@@ -49,6 +52,8 @@ namespace LiveHostSweeper
                         Utilities.PrintToScreen(ConsoleColor.Red, $"{userSelection} is invalid, please make a selection between 1-3.", PaddingTypes.Bottom);
                         userSelection = Utilities.ValidateUserInputToInt();
                     }
+
+                    Utilities.PrintToScreen(ConsoleColor.White, "", PaddingTypes.Top);
 
                     switch (userSelection)
                     {
@@ -129,13 +134,11 @@ namespace LiveHostSweeper
 
         private static void PingSweep(IPNetwork iPNetwork, ILogger logger, bool logOnlySuccess)
         {
-            Utilities.PrintToScreen(ConsoleColor.White, "--------------------------------------------------------------------------", PaddingTypes.Top);
-            Utilities.PrintToScreen(ConsoleColor.Cyan, "Ping Reply Status                    | Target Ip         | Round Trip Time", PaddingTypes.None);
-            Utilities.PrintToScreen(ConsoleColor.White, "--------------------------------------------------------------------------", PaddingTypes.None);
+            ConsoleTable table = new ConsoleTable("Status", "Target", "ms");
 
-            logger.Information("--------------------------------------------------------------------------");
-            logger.Information("Ping Reply Status                    | Target Ip         | Round Trip Time");
-            logger.Information("--------------------------------------------------------------------------");
+            logger.Information("----------------------------------------------------------------------------");
+            logger.Information("Ping Reply Status                    | Target Ip           | Round Trip Time");
+            logger.Information("----------------------------------------------------------------------------");
 
             if (iPNetwork.Usable < 255)
             {
@@ -150,39 +153,29 @@ namespace LiveHostSweeper
                 string ipPart1 = $"{value1}.{value2}.{value3}.";
                 string ipPart2 = value4.ToString();
                 PingReply reply;
+                int total = (int)iPNetwork.Usable;
 
-                for (int i = 0; i < iPNetwork.Usable; i++)
+                for (int i = 0; i < total; i++)
                 {
                     reply = null;
                     string targetIp = ipPart1 + i;
-                    //logger.Information($"Now looking at : {targetIp}");
 
                     try
                     {
                         reply = ping.Send(targetIp);
-
-                        switch (reply.Status)
-                        {
-                            case IPStatus.Success:
-                                Utilities.PrintPingResultsToScreen(ConsoleColor.Green, pingReply: reply, logger, targetIp, logOnlySuccess);
-                                break;
-
-                            case IPStatus.DestinationPortUnreachable:
-                            case IPStatus.DestinationNetworkUnreachable:
-                            case IPStatus.DestinationHostUnreachable:
-                                Utilities.PrintPingResultsToScreen(ConsoleColor.Gray, pingReply: reply, logger, targetIp, logOnlySuccess);
-                                break;
-
-                            default:
-                                Utilities.PrintPingResultsToScreen(ConsoleColor.Red, pingReply: reply, logger, targetIp, logOnlySuccess);
-                                break;
-                        }
                     }
                     catch (Exception)
                     {
                         throw;
                     }
+
+                    Utilities.PrintPingResultsToScreen(pingReply: reply, logger, targetIp, logOnlySuccess, table);
+
+                    Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: i, maxValue: total)} ({i} of {total} IP's pinged, approximately {Utilities.CalculateTimeLeft(currentSeconds: i, totalSeconds: total)})", PaddingTypes.None, overwritePreviousLine: true);
                 }
+
+                Utilities.PrintToScreen(ConsoleColor.White, "", PaddingTypes.Top);
+                table.Write();
             }
         }
     }

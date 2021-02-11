@@ -27,7 +27,7 @@ namespace LiveHostSweeper
 
         public static void SetupBaseWindow()
         {
-            Console.Title = "Live Host Sweeper (Feb 2021)";
+            Console.Title = "Live Host Sweeper v1.0 | Feb 2021";
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using LiveHostSweeper.Enums;
+﻿using ConsoleTables;
+using LiveHostSweeper.Enums;
 using Serilog;
 using System;
 using System.Net.NetworkInformation;
@@ -34,29 +35,31 @@ namespace LiveHostSweeper
             }
         }
 
-        public static void PrintPingResultsToScreen(ConsoleColor consoleColor, PingReply pingReply, ILogger logger, string targetIp, bool logOnlySuccess)
+        public static void PrintPingResultsToScreen(PingReply pingReply, ILogger logger, string targetIp, bool logOnlySuccess, ConsoleTable consoleTable)
         {
-            if (pingReply.Status == IPStatus.Success)
+            if (logOnlySuccess && pingReply.Status == IPStatus.Success)
             {
-                PrintToScreen(consoleColor, $"{pingReply.Status}                              | {targetIp}       | {pingReply.RoundtripTime}", PaddingTypes.None);
-                logger.Information($"{pingReply.Status}                              | {targetIp}       | {pingReply.RoundtripTime}");
+                consoleTable.AddRow(pingReply.Status, targetIp, pingReply.RoundtripTime);
+                logger.Information($"{pingReply.Status}                              | {targetIp}         | {pingReply.RoundtripTime}");
             }
-            else
+            else if (logOnlySuccess && pingReply.Status != IPStatus.Success)
             {
-                if (logOnlySuccess)
-                {
-                    PrintToScreen(consoleColor, $"{pingReply.Status}           | {targetIp}       | {pingReply.RoundtripTime}", PaddingTypes.None);
-                }
-                else
-                {
-                    PrintToScreen(consoleColor, $"{pingReply.Status}           | {targetIp}       | {pingReply.RoundtripTime}", PaddingTypes.None);
-                    logger.Information($"{pingReply.Status}           | {targetIp}       | {pingReply.RoundtripTime}");
-                }
+                //do no logging anywhere
+            }
+            else if (!logOnlySuccess)
+            {
+                consoleTable.AddRow(pingReply.Status, targetIp, pingReply.RoundtripTime);
+                logger.Information($"{pingReply.Status}                              | {targetIp}         | {pingReply.RoundtripTime}");
             }
         }
 
-        public static void PrintToScreen(ConsoleColor consoleColor, string line, PaddingTypes paddingTypes = PaddingTypes.Full)
+        public static void PrintToScreen(ConsoleColor consoleColor, string line, PaddingTypes paddingTypes = PaddingTypes.Full, bool overwritePreviousLine = false)
         {
+            if (overwritePreviousLine)
+            {
+                ClearCurrentConsoleLine();
+            }
+
             Console.ForegroundColor = consoleColor;
 
             switch (paddingTypes)
@@ -100,6 +103,59 @@ namespace LiveHostSweeper
 
             // Closes the current process
             Environment.Exit(0);
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/a/5027364/3324415
+        /// </summary>
+        private static void ClearCurrentConsoleLine()
+        {
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            int currentLineCursor = Console.CursorTop;
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, currentLineCursor);
+        }
+
+        /// <summary>
+        /// https://stackoverflow.com/a/48345459/3324415
+        /// </summary>
+        /// <param name="currentValue"></param>
+        /// <param name="maxValue"></param>
+        public static string CalculatePercentage(int currentValue, int maxValue)
+        {
+            //Calculate percentage
+            decimal percentage = (decimal)currentValue / maxValue;
+
+            //Render percentage
+            return $"{percentage:P}";
+        }
+
+        /// <summary>
+        /// Based on given current and total, return example: "55 seconds left." or "5 minutes and 40 seconds left."
+        /// </summary>
+        /// <param name="currentSeconds"></param>
+        /// <param name="totalSeconds"></param>
+        public static string CalculateTimeLeft(int currentSeconds, int totalSeconds)
+        {
+            int remainingSeconds = totalSeconds - currentSeconds;
+
+            if (remainingSeconds <= 60)
+            {
+                return $"{totalSeconds} seconds left.";
+            }
+            else
+            {
+                TimeSpan time = TimeSpan.FromSeconds(remainingSeconds);
+                if (time.Minutes == 1)
+                {
+                    return $"{time.Minutes} minute and {time.Seconds} seconds left.";
+                }
+                else
+                {
+                    return $"{time.Minutes} minutes and {time.Seconds} seconds left.";
+                }
+            }
         }
     }
 }
