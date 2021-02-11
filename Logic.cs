@@ -8,11 +8,11 @@ using System.Net.NetworkInformation;
 
 namespace LiveHostSweeper
 {
-    internal static class IPLogic
+    internal static class Logic
     {
         public static void PingRange(ILogger logger)
         {
-            const int defaultPingResponseTimeout = 1;
+            const int timeout = 500;
 
             Utilities.PrintToScreen(ConsoleColor.Cyan, "Please provide a valid target IPv4 or IPv6 address range. (Example: 192.168.0.143, 192.168.168.100/24, 2001:0db8::/64)");
             var targetIpnetwork = Console.ReadLine();
@@ -60,11 +60,11 @@ namespace LiveHostSweeper
                     switch (userSelection)
                     {
                         case 1:
-                            PingSweep(ipDataset, logger, logOnlySuccess: false, responseTimout: defaultPingResponseTimeout);
+                            PingSweep(ipDataset, logger, logOnlySuccess: false, responseTimout: timeout);
                             break;
 
                         case 2:
-                            PingSweep(ipDataset, logger, logOnlySuccess: true, responseTimout: defaultPingResponseTimeout);
+                            PingSweep(ipDataset, logger, logOnlySuccess: true, responseTimout: timeout);
                             break;
 
                         case 3:
@@ -137,7 +137,6 @@ namespace LiveHostSweeper
         private static void PingSweep(IPNetwork iPNetwork, ILogger logger, bool logOnlySuccess, int responseTimout)
         {
             ConsoleTable table = new ConsoleTable("Status", "Target", "ms");
-            
 
             if (iPNetwork.Usable < 255)
             {
@@ -154,7 +153,7 @@ namespace LiveHostSweeper
                 PingReply reply;
                 int total = (int)iPNetwork.Usable;
 
-                for (int i = 0; i < total; i++)
+                for (int i = value4; i < total + 1; i++)
                 {
                     reply = null;
                     string targetIp = ipPart1 + i;
@@ -173,7 +172,8 @@ namespace LiveHostSweeper
                     Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: i, maxValue: total)} ({i} of {total} IP's pinged)", PaddingTypes.None, overwritePreviousLine: true);
                 }
 
-                Utilities.PrintToScreen(ConsoleColor.White, "", PaddingTypes.Top);
+                Utilities.PrintToScreen(ConsoleColor.White, "", PaddingTypes.None);
+                logger.Information("");
                 logger.Information(table.ToString());
                 table.Write();
             }

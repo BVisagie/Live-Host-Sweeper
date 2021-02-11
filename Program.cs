@@ -16,7 +16,7 @@ namespace LiveHostSweeper
             {
                 case MainMenuOptions.IPv4:
                 case MainMenuOptions.IPv6:
-                    IPLogic.PingRange(fileLogger);
+                    Logic.PingRange(fileLogger);
                     break;
 
                 case MainMenuOptions.Exit:
