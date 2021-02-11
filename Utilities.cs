@@ -17,7 +17,7 @@ namespace LiveHostSweeper
 
             while (!int.TryParse(userInput, out userSelection))
             {
-                Console.WriteLine($"\n{userInput} is invalid, please enter a valid numeric character.\n");
+                PrintToScreen(ConsoleColor.Red, $"{userInput} is invalid, please enter a valid numeric character.");
                 userInput = Console.ReadLine();
             }
 
@@ -35,12 +35,11 @@ namespace LiveHostSweeper
             }
         }
 
-        public static void PrintPingResultsToScreen(PingReply pingReply, ILogger logger, string targetIp, bool logOnlySuccess, ConsoleTable consoleTable)
+        public static void PrintPingResultsToScreen(PingReply pingReply, string targetIp, bool logOnlySuccess, ConsoleTable consoleTable)
         {
             if (logOnlySuccess && pingReply.Status == IPStatus.Success)
             {
                 consoleTable.AddRow(pingReply.Status, targetIp, pingReply.RoundtripTime);
-                logger.Information($"{pingReply.Status}                              | {targetIp}         | {pingReply.RoundtripTime}");
             }
             else if (logOnlySuccess && pingReply.Status != IPStatus.Success)
             {
@@ -49,7 +48,6 @@ namespace LiveHostSweeper
             else if (!logOnlySuccess)
             {
                 consoleTable.AddRow(pingReply.Status, targetIp, pingReply.RoundtripTime);
-                logger.Information($"{pingReply.Status}                              | {targetIp}         | {pingReply.RoundtripTime}");
             }
         }
 
@@ -142,7 +140,7 @@ namespace LiveHostSweeper
 
             if (remainingSeconds <= 60)
             {
-                return $"{totalSeconds} seconds left.";
+                return $"{remainingSeconds} seconds left.";
             }
             else
             {

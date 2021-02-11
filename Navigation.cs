@@ -10,16 +10,16 @@ namespace LiveHostSweeper
         /// </summary>
         public static MainMenuOptions PresentAndHandleMainMenuOptions()
         {
-            Utilities.PrintToScreen(ConsoleColor.DarkYellow, "Live Host Sweeper", PaddingTypes.Top);
+            Utilities.PrintToScreen(ConsoleColor.DarkCyan, "Live Host Sweeper", PaddingTypes.Top);
 
-            Utilities.PrintToScreen(ConsoleColor.White, "Press [1] to perform a ping sweep of a given IPv4 or IPv6 address.", PaddingTypes.Top);
-            Utilities.PrintToScreen(ConsoleColor.White, "Press [2] to exit.", PaddingTypes.Bottom);
+            Utilities.PrintToScreen(ConsoleColor.Gray, "Press [1] to perform a ping sweep of a given IPv4 or IPv6 address.", PaddingTypes.Top);
+            Utilities.PrintToScreen(ConsoleColor.Gray, "Press [2] to exit.", PaddingTypes.Bottom);
 
             int userSelection = Utilities.ValidateUserInputToInt();
 
             while (userSelection != 1 && userSelection != 2)
             {
-                Utilities.PrintToScreen(ConsoleColor.White, $"{userSelection} is invalid, please make a selection between 1-2");
+                Utilities.PrintToScreen(ConsoleColor.Red, $"{userSelection} is invalid, please make a selection between 1-2");
                 userSelection = Utilities.ValidateUserInputToInt();
             }
 
@@ -33,14 +33,14 @@ namespace LiveHostSweeper
 
         public static void PresentAndHandleExitOptions()
         {
-            Utilities.PrintToScreen(ConsoleColor.White, "Press [1] to return to the main menu.", PaddingTypes.Top);
-            Utilities.PrintToScreen(ConsoleColor.White, "Press [2] to exit.", PaddingTypes.Bottom);
+            Utilities.PrintToScreen(ConsoleColor.Gray, "Press [1] to return to the main menu.", PaddingTypes.Top);
+            Utilities.PrintToScreen(ConsoleColor.Gray, "Press [2] to exit.", PaddingTypes.Bottom);
 
             int userSelection = Utilities.ValidateUserInputToInt();
 
             while (userSelection != 1 && userSelection != 2)
             {
-                Utilities.PrintToScreen(ConsoleColor.White, $"{userSelection} is invalid, please make a selection between 1-2.", PaddingTypes.Bottom);
+                Utilities.PrintToScreen(ConsoleColor.Red, $"{userSelection} is invalid, please make a selection between 1-2.", PaddingTypes.Bottom);
                 userSelection = Utilities.ValidateUserInputToInt();
             }
 
