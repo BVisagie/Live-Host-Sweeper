@@ -1,6 +1,8 @@
 ﻿using LiveHostSweeper.Enums;
+using Serilog;
 using System;
 using System.Net.NetworkInformation;
+using System.Text.RegularExpressions;
 using System.Threading;
 
 namespace LiveHostSweeper
@@ -32,14 +34,25 @@ namespace LiveHostSweeper
             }
         }
 
-        public static void PrintPingResultsToScreen(ConsoleColor consoleColor, PingReply pingReply)
+        public static void PrintPingResultsToScreen(ConsoleColor consoleColor, PingReply pingReply, ILogger logger, string targetIp, bool logOnlySuccess)
         {
-            Console.WriteLine("\n=====================================================================================================");
-            Console.ForegroundColor = consoleColor;
-            Console.WriteLine($"\nPing results are in, status: {pingReply.Status} for IP: {pingReply.Address}. Round trip time (ms): {pingReply.RoundtripTime} \n");
-            Console.ResetColor();
-            Console.WriteLine("=====================================================================================================\n");
-            CountDown(seconds: 5);
+            if (pingReply.Status == IPStatus.Success)
+            {
+                PrintToScreen(consoleColor, $"{pingReply.Status}                              | {targetIp}       | {pingReply.RoundtripTime}", PaddingTypes.None);
+                logger.Information($"{pingReply.Status}                              | {targetIp}       | {pingReply.RoundtripTime}");
+            }
+            else
+            {
+                if (logOnlySuccess)
+                {
+                    PrintToScreen(consoleColor, $"{pingReply.Status}           | {targetIp}       | {pingReply.RoundtripTime}", PaddingTypes.None);
+                }
+                else
+                {
+                    PrintToScreen(consoleColor, $"{pingReply.Status}           | {targetIp}       | {pingReply.RoundtripTime}", PaddingTypes.None);
+                    logger.Information($"{pingReply.Status}           | {targetIp}       | {pingReply.RoundtripTime}");
+                }
+            }
         }
 
         public static void PrintToScreen(ConsoleColor consoleColor, string line, PaddingTypes paddingTypes = PaddingTypes.Full)
@@ -66,6 +79,27 @@ namespace LiveHostSweeper
             }
 
             Console.ResetColor();
+        }
+
+        /// <summary>
+        /// Creates a short mostly unique id composed of only alphanumeric characters.
+        /// https://stackoverflow.com/a/42026123/3324415
+        /// </summary>
+        public static string ShortUid()
+        {
+            return Regex.Replace(Convert.ToBase64String(Guid.NewGuid().ToByteArray()), "[/+=]", "");
+        }
+
+        public static void RestartApplication()
+        {
+            // Once you have the path you get the directory with:
+            var directory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+
+            // Starts a new instance of the program itself
+            System.Diagnostics.Process.Start($"{directory}\\LiveHostSweeper.exe");
+
+            // Closes the current process
+            Environment.Exit(0);
         }
     }
 }

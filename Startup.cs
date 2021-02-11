@@ -18,9 +18,10 @@ namespace LiveHostSweeper
             string errorDirectoryPath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName;
             string dateTime = DateTime.Now.ToString("yyyy-MM-dd");
             var filePathAndName = $"{errorDirectoryPath}\\LiveHostSweeper-{dateTime}";
+            var shortGuid = Utilities.ShortUid();
             return new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                .WriteTo.File($"{filePathAndName}.txt", outputTemplate: "[{Timestamp:HH:mm:ss}][{Level:u3}] {Message:lj}{NewLine}{Exception}")
+                .WriteTo.File($"{filePathAndName}_{shortGuid}.txt", outputTemplate: "[{Timestamp:HH:mm:ss}][{Level:u3}] {Message:lj}{NewLine}{Exception}")
                 .CreateLogger();
         }
 

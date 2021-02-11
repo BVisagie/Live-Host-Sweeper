@@ -15,7 +15,7 @@ namespace LiveHostSweeper
 
             int userSelection = Utilities.ValidateUserInputToInt();
 
-            while (userSelection != 1 && userSelection != 2 && userSelection != 3)
+            while (userSelection != 1 && userSelection != 2)
             {
                 Utilities.PrintToScreen(ConsoleColor.White, $"{userSelection} is invalid, please make a selection between 1-2");
                 userSelection = Utilities.ValidateUserInputToInt();
