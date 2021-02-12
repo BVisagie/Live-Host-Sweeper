@@ -6,13 +6,6 @@ namespace LiveHostSweeper
 {
     internal static class StartupMethods
     {
-        public static ILogger StartConsoleLogger()
-        {
-            return new LoggerConfiguration()
-                .WriteTo.Console(outputTemplate: "[{Timestamp:HH:mm:ss}][{Level:u3}] {Message:lj}{NewLine}{Exception}")
-                .CreateLogger();
-        }
-
         public static ILogger StartFileLogger()
         {
             string errorDirectoryPath = new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName;
