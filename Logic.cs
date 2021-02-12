@@ -12,7 +12,7 @@ namespace LiveHostSweeper
     {
         public static void PingRange(ILogger logger)
         {
-            const int timeout = 500;
+            const int timeout = 150;
 
             Utilities.PrintToScreen(ConsoleColor.Cyan, "Please provide a valid target IPv4 or IPv6 address range. (Example: 192.168.0.143, 192.168.168.100/24, 2001:0db8::/64)");
             var targetIpnetwork = Console.ReadLine();
@@ -169,13 +169,36 @@ namespace LiveHostSweeper
 
                     Utilities.PrintPingResultsToScreen(pingReply: reply, targetIp, logOnlySuccess, table);
 
-                    Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: i, maxValue: total)} ({i} of {total} IP's pinged)", PaddingTypes.None, overwritePreviousLine: true);
+                    Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: i, maxValue: total)} ({i} of {total} IP's pinged. Waiting up to {responseTimout}ms.)", PaddingTypes.None, overwritePreviousLine: true);
                 }
 
                 Utilities.PrintToScreen(ConsoleColor.White, "", PaddingTypes.None);
-                logger.Information("");
-                logger.Information(table.ToString());
+                logger.Information($"\n\n{table}");
                 table.Write();
+
+                Utilities.PrintToScreen(ConsoleColor.Yellow, $"Your log file should be saved here: {new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName}", PaddingTypes.Full);
+
+                Utilities.PrintToScreen(ConsoleColor.Gray, "Press [1] to restart the application.", PaddingTypes.None);
+                Utilities.PrintToScreen(ConsoleColor.Gray, "Press [2] to exit.", PaddingTypes.Bottom);
+
+                int userSelection = Utilities.ValidateUserInputToInt();
+
+                while (userSelection != 1 && userSelection != 2)
+                {
+                    Utilities.PrintToScreen(ConsoleColor.Red, $"{userSelection} is invalid, please make a selection between 1-3.");
+                    userSelection = Utilities.ValidateUserInputToInt();
+                }
+
+                switch (userSelection)
+                {
+                    case 1:
+                        Utilities.RestartApplication();
+                        break;
+
+                    case 2:
+                        Environment.Exit(0);
+                        break;
+                }
             }
         }
     }

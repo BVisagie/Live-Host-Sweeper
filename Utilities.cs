@@ -1,5 +1,6 @@
 ﻿using ConsoleTables;
 using LiveHostSweeper.Enums;
+using Serilog;
 using System;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
