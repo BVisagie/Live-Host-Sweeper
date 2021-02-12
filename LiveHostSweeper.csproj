@@ -4,6 +4,9 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
     <ApplicationIcon>lhs.ico</ApplicationIcon>
+    <Authors>Bernard Visagie</Authors>
+    <Company />
+    <Product>Live Host Sweeper</Product>
   </PropertyGroup>
 
   <ItemGroup>
