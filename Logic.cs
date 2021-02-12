@@ -89,8 +89,7 @@ namespace LiveHostSweeper
                     Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: i, maxValue: total)} ({i} of {total} IP's pinged.)", PaddingTypes.None, overwritePreviousLine: true);
                 }
 
-                Utilities.PrintToScreen(ConsoleColor.White, "\n\n", PaddingTypes.None);
-                logger.Information($"{table}");
+                logger.Information($"\n\n{table}");
                 table.Write();
 
                 Utilities.PrintToScreen(ConsoleColor.Yellow, $"Your log file should be saved here: {new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName}", PaddingTypes.Full);
