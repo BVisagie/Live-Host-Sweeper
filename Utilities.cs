@@ -96,7 +96,7 @@ namespace LiveHostSweeper
             var directory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
             // Starts a new instance of the program itself
-            System.Diagnostics.Process.Start($"{directory}\\LiveHostSweeper.exe");
+            System.Diagnostics.Process.Start($"{directory}\\Live-Host-Sweeper.exe");
 
             // Closes the current process
             Environment.Exit(0);
