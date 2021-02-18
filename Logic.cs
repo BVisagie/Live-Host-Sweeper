@@ -53,10 +53,10 @@ namespace LiveHostSweeper
 
         private static void PingSweep(IPNetwork iPNetwork, ILogger logger, bool logOnlySuccess)
         {
-            ConsoleTable table = new ConsoleTable("Status", "Target", "Round Trip Time");
-
             if (iPNetwork.Usable < 255)
             {
+                ConsoleTable table = new ConsoleTable("Status", "Target", "Round Trip Time");
+
                 string[] tokens = iPNetwork.FirstUsable.ToString().Split('.');
                 int value1 = int.Parse(tokens[0]);
                 int value2 = int.Parse(tokens[1]);
@@ -77,7 +77,7 @@ namespace LiveHostSweeper
 
                 int completed = 1;
 
-                foreach (var (ip, reply) in ipList.AsParallel().WithDegreeOfParallelism(ipList.Count).Select(ip => (ip, new Ping().Send(ip, 150))))
+                foreach (var (ip, reply) in ipList.AsParallel().WithDegreeOfParallelism(ipList.Count).Select(ip => (ip, new Ping().Send(ip, timeout: 150))))
                 {
                     Utilities.PrintPingResultsToScreen(pingReply: reply, ip, logOnlySuccess, table);
                     Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: completed, maxValue: ipList.Count)} ({completed} of {ipList.Count} IP's pinged.)", PaddingTypes.None, overwritePreviousLine: true);
@@ -92,6 +92,12 @@ namespace LiveHostSweeper
 
                 Utilities.PrintToScreen(ConsoleColor.Yellow, $"Your log file should be saved here: {new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName}", PaddingTypes.Full);
 
+                Navigation.PresentAndHandleExitOptions();
+            }
+            else
+            {
+                Utilities.ClearCurrentConsoleLine();
+                Utilities.PrintToScreen(ConsoleColor.Red, "ERROR! Networks greater than 255 are not currently supported!", PaddingTypes.Bottom);
                 Navigation.PresentAndHandleExitOptions();
             }
         }

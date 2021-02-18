@@ -105,7 +105,7 @@ namespace LiveHostSweeper
         /// <summary>
         /// https://stackoverflow.com/a/5027364/3324415
         /// </summary>
-        private static void ClearCurrentConsoleLine()
+        public static void ClearCurrentConsoleLine()
         {
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             int currentLineCursor = Console.CursorTop;
