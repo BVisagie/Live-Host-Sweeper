@@ -10,7 +10,7 @@ using System.Net.NetworkInformation;
 
 namespace LiveHostSweeper
 {
-    internal static class Logic
+    public static class Logic
     {
         public static void PingRange(ILogger logger)
         {
@@ -75,18 +75,19 @@ namespace LiveHostSweeper
                     ipList.Add(ipBlockPart1 + i);
                 }
 
-                string[] ipTokens;
-                int ipPartFour;
+                int completed = 1;
 
-                foreach (var pingResponseData in ipList.AsParallel().WithDegreeOfParallelism(64).Select(ip => new { ip, pingReply = new Ping().Send(ip) }))
+                foreach (var (ip, reply) in ipList.AsParallel().WithDegreeOfParallelism(ipList.Count).Select(ip => (ip, new Ping().Send(ip, 150))))
                 {
-                    Utilities.PrintPingResultsToScreen(pingReply: pingResponseData.pingReply, pingResponseData.ip, logOnlySuccess, table);
-                    //ipTokens = pingResponseData.ip.Split('.');
-                    //ipPartFour = int.Parse(tokens[3]);
-                    //Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: ipPartFour, maxValue: totalUsableIps)} ({ipPartFour} of {totalUsableIps} IP's pinged.)", PaddingTypes.None, overwritePreviousLine: true);
+                    Utilities.PrintPingResultsToScreen(pingReply: reply, ip, logOnlySuccess, table);
+                    Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: completed, maxValue: ipList.Count)} ({completed} of {ipList.Count} IP's pinged.)", PaddingTypes.None, overwritePreviousLine: true);
+                    completed++;
                 }
 
                 logger.Information($"\n\n{table}");
+
+                Utilities.PrintToScreen(ConsoleColor.Yellow, "", PaddingTypes.None);
+
                 table.Write();
 
                 Utilities.PrintToScreen(ConsoleColor.Yellow, $"Your log file should be saved here: {new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName}", PaddingTypes.Full);

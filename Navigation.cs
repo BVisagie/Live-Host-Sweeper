@@ -107,6 +107,8 @@ namespace LiveHostSweeper
                 userSelection = Utilities.ValidateUserInputToInt();
             }
 
+            Utilities.PrintToScreen(ConsoleColor.Yellow, "", PaddingTypes.Bottom);
+
             return userSelection;
         }
     }
