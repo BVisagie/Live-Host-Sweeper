@@ -61,8 +61,8 @@ namespace LiveHostSweeper
 
         public static IPNetwork IpDataSetOptions(ILogger logger)
         {
-            Utilities.PrintToScreen(ConsoleColor.Cyan, "Please provide a valid target IPv4 or IPv6 address range. (Example: 192.168.0.143, 192.168.168.100/24, 2001:0db8::/64)", PaddingTypes.Top);
-            Utilities.PrintToScreen(ConsoleColor.Cyan, "Please note that currently pinging more than 255 hosts is not supported :)", PaddingTypes.Bottom);
+            Utilities.PrintToScreen(ConsoleColor.DarkCyan, "Please provide a valid target IPv4 or IPv6 address range. (Example: 192.168.0.143, 192.168.168.100/24, 2001:0db8::/64)", PaddingTypes.Top);
+            Utilities.PrintToScreen(ConsoleColor.DarkCyan, "Please note that currently pinging more than 255 hosts is not supported :)", PaddingTypes.Bottom);
             var targetIpnetwork = Console.ReadLine();
 
             while (!Logic.ValidateIp(targetIpnetwork))
@@ -106,6 +106,8 @@ namespace LiveHostSweeper
                 Utilities.PrintToScreen(ConsoleColor.Red, $"{userSelection} is invalid, please make a selection between 1-3.", PaddingTypes.Bottom);
                 userSelection = Utilities.ValidateUserInputToInt();
             }
+
+            Utilities.PrintToScreen(ConsoleColor.Yellow, "", PaddingTypes.Bottom);
 
             return userSelection;
         }

@@ -2,18 +2,18 @@
 using LiveHostSweeper.Enums;
 using Serilog;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
 
 namespace LiveHostSweeper
 {
-    internal static class Logic
+    public static class Logic
     {
         public static void PingRange(ILogger logger)
         {
-            const int timeout = 150;
-
             var ipDataset = Navigation.IpDataSetOptions(logger);
 
             switch (Navigation.IpOptions())
@@ -23,11 +23,11 @@ namespace LiveHostSweeper
                     switch (Navigation.IpSearchOptions())
                     {
                         case 1:
-                            PingSweep(ipDataset, logger, logOnlySuccess: false, responseTimout: timeout);
+                            PingSweep(ipDataset, logger, logOnlySuccess: false);
                             break;
 
                         case 2:
-                            PingSweep(ipDataset, logger, logOnlySuccess: true, responseTimout: timeout);
+                            PingSweep(ipDataset, logger, logOnlySuccess: true);
                             break;
 
                         case 3:
@@ -51,13 +51,11 @@ namespace LiveHostSweeper
             }
         }
 
-        private static void PingSweep(IPNetwork iPNetwork, ILogger logger, bool logOnlySuccess, int responseTimout)
+        private static void PingSweep(IPNetwork iPNetwork, ILogger logger, bool logOnlySuccess)
         {
-            ConsoleTable table = new ConsoleTable("Status", "Target", "Round Trip Time");
-
             if (iPNetwork.Usable < 255)
             {
-                using var ping = new Ping();
+                ConsoleTable table = new ConsoleTable("Status", "Target", "Round Trip Time");
 
                 string[] tokens = iPNetwork.FirstUsable.ToString().Split('.');
                 int value1 = int.Parse(tokens[0]);
@@ -65,35 +63,41 @@ namespace LiveHostSweeper
                 int value3 = int.Parse(tokens[2]);
                 int value4 = int.Parse(tokens[3]);
 
-                string ipPart1 = $"{value1}.{value2}.{value3}.";
-                string ipPart2 = value4.ToString();
-                PingReply reply;
-                int total = (int)iPNetwork.Usable;
+                string ipBlockPart1 = $"{value1}.{value2}.{value3}.";
+                string ipBlockPart2 = value4.ToString();
 
-                for (int i = value4; i < total + 1; i++)
+                int totalUsableIps = (int)iPNetwork.Usable;
+
+                //example: 192.168.0.1, 192.168.0.2, 192.168.0.3 etc.
+                List<string> ipList = new List<string>();
+                for (int i = value4; i < totalUsableIps + 1; i++)
                 {
-                    reply = null;
-                    string targetIp = ipPart1 + i;
+                    ipList.Add(ipBlockPart1 + i);
+                }
 
-                    try
-                    {
-                        reply = ping.Send(targetIp, timeout: responseTimout);
-                    }
-                    catch (Exception)
-                    {
-                        throw;
-                    }
+                int completed = 1;
 
-                    Utilities.PrintPingResultsToScreen(pingReply: reply, targetIp, logOnlySuccess, table);
-
-                    Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: i, maxValue: total)} ({i} of {total} IP's pinged.)", PaddingTypes.None, overwritePreviousLine: true);
+                foreach (var (ip, reply) in ipList.AsParallel().WithDegreeOfParallelism(ipList.Count).Select(ip => (ip, new Ping().Send(ip, timeout: 150))))
+                {
+                    Utilities.PrintPingResultsToScreen(pingReply: reply, ip, logOnlySuccess, table);
+                    Utilities.PrintToScreen(ConsoleColor.Cyan, $"{Utilities.CalculatePercentage(currentValue: completed, maxValue: ipList.Count)} ({completed} of {ipList.Count} IP's pinged.)", PaddingTypes.None, overwritePreviousLine: true);
+                    completed++;
                 }
 
                 logger.Information($"\n\n{table}");
+
+                Utilities.PrintToScreen(ConsoleColor.Yellow, "", PaddingTypes.None);
+
                 table.Write();
 
                 Utilities.PrintToScreen(ConsoleColor.Yellow, $"Your log file should be saved here: {new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName}", PaddingTypes.Full);
 
+                Navigation.PresentAndHandleExitOptions();
+            }
+            else
+            {
+                Utilities.ClearCurrentConsoleLine();
+                Utilities.PrintToScreen(ConsoleColor.Red, "ERROR! Networks greater than 255 are not currently supported!", PaddingTypes.Bottom);
                 Navigation.PresentAndHandleExitOptions();
             }
         }

@@ -96,7 +96,7 @@ namespace LiveHostSweeper
             var directory = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
 
             // Starts a new instance of the program itself
-            System.Diagnostics.Process.Start($"{directory}\\LiveHostSweeper.exe");
+            System.Diagnostics.Process.Start($"{directory}\\Live-Host-Sweeper.exe");
 
             // Closes the current process
             Environment.Exit(0);
@@ -105,7 +105,7 @@ namespace LiveHostSweeper
         /// <summary>
         /// https://stackoverflow.com/a/5027364/3324415
         /// </summary>
-        private static void ClearCurrentConsoleLine()
+        public static void ClearCurrentConsoleLine()
         {
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             int currentLineCursor = Console.CursorTop;
