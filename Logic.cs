@@ -23,11 +23,11 @@ namespace LiveHostSweeper
                     switch (Navigation.IpSearchOptions())
                     {
                         case 1:
-                            PingSweep(ipDataset, logger, logOnlySuccess: false);
+                            PingSweepTwo(ipDataset, logger, logOnlySuccess: false);
                             break;
 
                         case 2:
-                            PingSweep(ipDataset, logger, logOnlySuccess: true);
+                            PingSweepTwo(ipDataset, logger, logOnlySuccess: true);
                             break;
 
                         case 3:
@@ -87,6 +87,55 @@ namespace LiveHostSweeper
                 logger.Information($"\n\n{table}");
 
                 Utilities.PrintToScreen(ConsoleColor.Yellow, "", PaddingTypes.None);
+
+                table.Write();
+
+                Utilities.PrintToScreen(ConsoleColor.Yellow, $"Your log file should be saved here: {new DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).FullName}", PaddingTypes.Full);
+
+                Navigation.PresentAndHandleExitOptions();
+            }
+            else
+            {
+                Utilities.ClearCurrentConsoleLine();
+                Utilities.PrintToScreen(ConsoleColor.Red, "ERROR! Networks greater than 255 are not currently supported!", PaddingTypes.Bottom);
+                Navigation.PresentAndHandleExitOptions();
+            }
+        }
+
+        private static void PingSweepTwo(IPNetwork iPNetwork, ILogger logger, bool logOnlySuccess)
+        {
+            if (iPNetwork.Usable < 255)
+            {
+                Utilities.PrintToScreen(ConsoleColor.Red, "Working...", PaddingTypes.Full);
+
+                ConsoleTable table = new ConsoleTable("Status", "Target", "Round Trip Time");
+
+                string[] tokens = iPNetwork.FirstUsable.ToString().Split('.');
+                int value1 = int.Parse(tokens[0]);
+                int value2 = int.Parse(tokens[1]);
+                int value3 = int.Parse(tokens[2]);
+                int value4 = int.Parse(tokens[3]);
+
+                string ipBlockPart1 = $"{value1}.{value2}.{value3}.";
+                string ipBlockPart2 = value4.ToString();
+
+                int totalUsableIps = (int)iPNetwork.Usable;
+
+                //example: 192.168.0.1, 192.168.0.2, 192.168.0.3 etc.
+                List<string> ipList = new List<string>();
+                for (int i = value4; i < totalUsableIps + 1; i++)
+                {
+                    ipList.Add(ipBlockPart1 + i);
+                }
+
+                ipList.ForEachAsync(async ip =>
+                {
+                    var ping = new Ping();
+                    var reply = await ping.SendPingAsync(ip).ConfigureAwait(false);
+                    Utilities.PrintPingResultsToScreen(pingReply: reply, ip, logOnlySuccess, table);
+                }, dop: 80).Wait();
+
+                logger.Information($"\n\n{table}");
 
                 table.Write();
 

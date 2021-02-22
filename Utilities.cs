@@ -1,9 +1,12 @@
 ﻿using ConsoleTables;
 using LiveHostSweeper.Enums;
 using System;
+using System.Collections.Generic;
 using System.Net.NetworkInformation;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 
 namespace LiveHostSweeper
 {
@@ -152,6 +155,44 @@ namespace LiveHostSweeper
                 {
                     return $"{time.Minutes} minutes and {time.Seconds} seconds left.";
                 }
+            }
+        }
+
+        //public static Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> action, int dop)
+        //{
+        //    // Arguments validation omitted
+        //    var block = new ActionBlock<T>(action, new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = dop });
+        //    try
+        //    {
+        //        foreach (var item in source) block.Post(item);
+        //        block.Complete();
+        //    }
+        //    catch (Exception ex) { ((IDataflowBlock)block).Fault(ex); }
+        //    return block.Completion;
+        //}
+
+        public static async Task ForEachAsync<T>(this IEnumerable<T> source, Func<T, Task> action, int dop)
+        {
+            // Arguments validation omitted
+            var block = new ActionBlock<T>(action, new ExecutionDataflowBlockOptions() { MaxDegreeOfParallelism = dop, BoundedCapacity = dop });
+
+            try
+            {
+                foreach (var item in source)
+                    if (!await block.SendAsync(item).ConfigureAwait(false)) break;
+                block.Complete();
+            }
+            catch (Exception ex)
+            {
+                ((IDataflowBlock)block).Fault(ex);
+            }
+            try
+            {
+                await block.Completion.ConfigureAwait(false);
+            }
+            catch
+            {
+                block.Completion.Wait(); // Propagate AggregateException
             }
         }
     }
